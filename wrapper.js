@@ -13,6 +13,7 @@ Wraps up the remarkable parser for use as a Parser in TiddlyWiki
 "use strict";
 
 var r = require("$:/plugins/tiddlywiki/markdown/remarkable.js");
+var rk = require("$:/plugins/tiddlywiki/markdown/remarkable-katex.js");
 
 var Remarkable = r.Remarkable,
 	linkify = r.linkify,
@@ -38,6 +39,9 @@ var accumulatingTypes = {
 };
 
 var md = new Remarkable(remarkableOpts);
+
+// Enable remarkable-katex.
+md.use(rk);
 
 if (parseAsBoolean("$:/config/markdown/linkify")) {
 	md = md.use(linkify);
@@ -223,6 +227,15 @@ function convertNodes(remarkableTree, isStartOfInline) {
 			accumulatedText = accumulatedText + currentNode.content;
 			break;
 
+                case "katex":
+                  out.push({
+                    type: "latex",
+                    attributes: {
+                      text: { type: "text", value: currentNode.content },
+                      displayMode: { type: "text", value: currentNode.block ? "true" : "false" }
+                    }
+                  });
+                        break;
 		default:
 			if (currentNode.type.substr(currentNode.type.length - 5) === "_open") {
 				var tagName = currentNode.type.substr(0, currentNode.type.length - 5);
